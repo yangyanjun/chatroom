@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		*{
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			text-decoration: none;
+			font-weight: normal;
+			font-style: normal;
+		}
+		body{
+			background: url("/images/bg1.jpg") repeat;
+			background-size: 100%,100%;
+		}
+		#rl{
+			width: 250px;
+			height: 200px;
+			margin:200px auto;
+			text-align: center;
+		}
+		#rl .regist, #rl .login{
+			display: block;
+			height: 30px;
+			margin-top: 40px;
+		}
+		h2{
+			font-size: 35px;
+		}
+		#rl .regist{
+			margin-top: 10px;
+		}
+		div.header{
+
+		}
+		div .container{
+			width:980px;
+			margin: 0 auto;
+		}
+		.header .container{
+			height:100px;
+		}
+		.clear:after{
+			content:"";
+			display: block;
+			clear: both;
+		}
+		h1{
+			float: left;
+			height:100%;
+		}
+		.user{
+			width:300px;
+			height:100%;
+			float: right;
+			overflow: hidden;
+			line-height: 100px;
+			font-size: 20px;
+			text-align: center;
+		}
+		.head_pic{
+			height:100%;
+			width:80px;
+			float: left;
+		}
+		.username{
+			height:100%;
+			width:100px;
+			float: left;
+		}
+		.exit{
+			height:100%;
+			width:100px;
+			float: left;
+		}
+		.exit a{
+			color:black;
+			font-size: 14px;
+		}
+		img{
+			width:80px;
+			height:70px;
+			border-radius: 50%;
+		}
+		.message_list{
+			float: left;
+ 			width:700px;
+			/*overflow: auto;*/
+			height:400px;
+			box-sizing:border-box;
+			border:1px solid gray;
+			/*数字字母强制换行  word-wrap: break-word;不起作用 */
+			word-break:break-all;
+			overflow: auto;
+
+		}
+		.user_list{
+			float: left;
+			overflow: auto;
+			height:492px;
+			width:180px; 
+			border:1px solid gray;
+			border-right:none;
+			box-sizing: border-box;
+
+		}
+
+		
+		.message_list li img{
+			width:30px;
+			height: 30px;
+		}
+		.message_list li{
+			
+		}
+		.message_list li .user_style{
+			
+			color:gray;
+			vertical-align: top;
+		}
+		.message_list li .font_style{
+			margin-left: 35px;
+			background: pink;
+			display: inline-block;
+			border-radius: 5px;
+			border-top-left-radius: 0;
+			padding: 3px 13px;
+			position: relative;
+			top: -10px;
+			
+			
+		}
+		.tex{
+			float: left;
+		}
+		#tex{
+			width: 698px;
+			float: left;
+		}
+		.btn{
+			width:50%;
+			/*float: left;*/
+		}
+		.wel{
+			width:100%;
+			font-size: 20px;
+			padding-left: 10px;
+			color:#333;
+		}
+		.wel .user_name{
+			font-size: 25px;
+			color:orange;
+		}
+		.user_left{
+			padding-left: 5px;
+		}
+	</style>
+</head>
+<body>
+    <% if(hasLogin){%>
+			  <div class="header">
+			  	<div class="container clear">
+			  		<h1>欢迎进入聊天室</h1>
+			  		<div class="user clear">
+			  			<div class="head_pic">
+			  				<img src="<%=head_pic%>" alt="">
+			  			</div>
+			  			<div class="username">
+			  				<%=username%>
+			  			</div>
+			  			<div class="exit">
+			  				<a href="/exit">退出</a>
+			  			</div>
+			  		</div>
+			  	</div>
+			  </div>
+			  <!-- 聊天部分 -->
+			  <div class="body"> 
+					<div class="container clear">
+						<ul class="user_list">
+							
+						</ul>
+						<ul class="message_list">
+							
+						</ul>
+				
+			  		<div class="tex">
+			  			<textarea name="" id="tex" cols="30" rows="6"></textarea>
+			  			<input type="button" id="btn" value="发送">
+			  		</div>
+			  	</div>
+			  </div>
+    <%}else {%>
+    	<div id="rl">
+    		<h2>天空之城聊天室</h2>
+			<a class="login" href="/login.html">登录</a>
+    		<a class="regist" href="/regist.html">注册</a>
+
+    	</div>
+			 
+    <%}%>
+     <!-- 这个页面此时是服务端页面，携带的文件是下面这个socket.io.js文件 当有浏览器访问的时候服务器就会将这个ejs页面渲染并发送到客户端 那么这个js文件就跟着下去了 浏览器页面就有了socket.io.js文件了。 此时我们在服务器上事先写好一个程序 -->
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="js/jquery-1.7.2.js"></script>
+    <script type="text/javascript"> 
+      //第六步
+      if(<%=hasLogin%>){
+      	var socket=io();
+      	var $tex=$("#tex");
+      	var $btn=$("#btn");
+      	var $username=$(".username").html();
+      	var $message_list=$(".message_list");
+      	var $user_list=$(".user_list");
+      	var user={};
+      
+      	user.userid="<%=userid%>";
+      	user.username="<%=username%>";
+      	user.head_pic="<%=head_pic%>";
+      	user.quanxian="<%=quanxian%>";
+      	//自动触发一个事件 叫做我来了
+      	socket.emit("Iamcomming",user);
+      	// (1)点击事件中 我么使用socket触发后端监听的zha事件 此时会通知后端
+      	$btn.click(function(){
+      		var val=$tex.val();
+      		//没内容  返回
+      		if(val===""){
+      			return;
+      		}
+      		//emit表示触发 引发的意思
+      		var obj={
+      			me:$username,
+      			message:val,
+      			href:user.head_pic
+      		}
+      		socket.emit("information",obj);
+      		$tex.val("");
+      		// var li=$("<li><span>"+$username+"</span>说：<span>"+$inp.val()+"</span></li>");
+      		// $message_list.append(li);
+
+      	})
+      	//当用户登陆的时候 自动触发一个事件 
+      	//加等号 if(true)
+      	//不佳等号 if()
+      	//监听say事件 定义触发say的时候要要做的事情 至此一个流程结束
+      	//若写成src=/"+data.href+"/>  则图片出不来 解析的地址右边会多一个/
+      	socket.on("say",function(data){
+      		var li=$("<li><img src="+data.href+"><span class='user_style'>"+data.me+"</span><br><span class='font_style'>"+data.message+"</span></li>");
+      		$message_list.append(li);
+      		$(".message_list").scrollTop(100000000);
+      	});
+      	// 有人来了,聊天室左侧所有用户逻辑
+      	socket.on("someOneCome",function(allUsers){
+      		//获得到所有信息之后  我们可以重新组建dom
+      		var ulstr="";
+      		var listr="";
+      		for(var i in allUsers){
+      			//组建一个li
+      			listr="<li>"+"<span class='user_left' data_id='"+allUsers[i].userid+"'>"+allUsers[i]["username"]+"</span> <% if(quanxian=='4'){%><input type='button' value='踢出'> <button>禁言</button><%}%></li>";
+      			ulstr+=listr;
+      		}
+      		// console.log(ulstr);
+      		$(".user_list").html(ulstr);
+      	})
+      	//欢迎进入聊天室
+      	socket.on("welcome",function(user){
+      		var li=$("<li class='wel'>欢迎<span class='user_name'> "+user.username+" </span>进入聊天室!</li>");
+      		$message_list.append(li);
+      	})
+      	//欢送离开聊天室
+      	socket.on("goodbye",function(user){
+      		var li=$("<li class='wel'>欢送<span class='user_name'> "+user.username+" </span>离开聊天室!</li>");
+      		$message_list.append(li);
+      	})
+
+      	//踢人逻辑
+      	//使用委托模式
+      	$user_list.on("click","input",function(){
+      		//先确定要踢谁
+      		var userid=$(this).prev().attr("data_id");
+      		//向后台发送信息 要踢这个人 让后台进行数据处理 即删除相关信息
+      		// console.log(userid);
+      		socket.emit("kick",userid);
+
+      	});
+      	//禁言逻辑 使用委托模式
+      	$user_list.on("click","button",function(){
+      		if($(this).html()==="禁言"){
+      			$(this).html("解除禁言");
+	      		//先确定禁言谁
+	      		var userid=$(this).prev().prev().attr("data_id");
+	      		console.log(userid)
+	      		//向后台发送信息
+	      		socket.emit("nosay",userid);
+	      		}else if($(this).html()==="解除禁言"){
+	      			$(this).html("禁言");
+	      			//先确定对谁进行解除禁言
+		      		var userid=$(this).prev().prev().attr("data_id");
+		      		console.log(userid)
+		      		//向后台发送信息
+		      		socket.emit("maysay",userid);
+	      		}
+      		
+      	});
+      	//如果你是被禁言者,你将不能说话
+      	socket.on("jinyan",function(userid){
+      		console.log("进来了")
+      		console.log(userid,user.userid)
+      		if(userid===user.userid){
+      			//将被禁言者的发送按钮设为不可用
+      			$btn.attr("disabled","true");
+      			
+
+      		}
+      	});
+      	//如果你被解除禁言 你就可以说话了
+      	socket.on("jiechujinyan",function(userid){
+      		console.log("进来了")
+      		console.log(userid,user.userid)
+      		if(userid===user.userid){
+      			//将被禁言者的发送按钮设为不可用
+      			$btn.removeAttr("disabled");
+      			
+
+      		}
+      	});
+      	//如果你是被踢者，那么你将自动断开连接
+      	socket.on("tizou",function(userid){
+      		if(userid===user.userid){
+      			//主动断开
+      			socket.disconnect();
+      			//重置路由
+      			location.href="http://localhost:3000/";
+      		}
+      	})
+      }
+    </script>
+</body>
+</html>

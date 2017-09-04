@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	*{
+		padding: 0;
+		margin: 0;
+	}
+	body{
+			background: url("/images/bg2.jpg") repeat;
+			background-size: 100%,100%;
+		}
+		form{
+			width: 600px;
+			height: 400px;
+			margin:100px auto;
+			margin-left: 500px;
+			margin-top: 200px;
+
+		}
+		p{
+			height: 35px;
+			line-height: 30px;
+		}
+		input{
+				border-radius: 10px;
+				height: 20px;
+				outline: none;
+			}
+		input[type="submit"]{
+			width: 45px;
+			border-radius: 0;
+			margin-left: 80px;
+		}
+		p:last-of-type{
+			height: 20px;
+		}
+			#login,#exit,#submit{
+			display: block;
+			width: 70px;
+			margin-left: 120px;
+			background: #fff;
+			margin-top: 7px;
+			border-radius: 5px;
+			padding: 12px 0;
+			line-height: 2px;
+
+		}
+		#login{
+			margin-top: 14px;
+		}
+		a{
+			text-decoration: none;
+		}
+	</style>
+</head>
+<body>
+	<form action="/regist" method="post" enctype="multipart/form-data">
+			<p><span>用户编号: </span><input type="number" name="userid" id="id"><span id="userid_check"></span></p>
+			<p><span>用户名称: </span><input type="text" name="username" id="username"><span id="username_check"></span></p>
+			<p>用户头像: </span><input type="file" name="user_pic"></p>
+			<p><span>用户密码: </span><input type="password" name="password" id="password"><span id="password_check"></span></p>
+			<p><input type="submit" id="submit"></p>
+			<a href="/login.html"><input type="button" value="去登录" id="login"></a>
+			<a href="/exit"><input type="button" value="退出" id="exit"></a>
+	</form>
+	<script type="text/javascript" src="/js/jquery-1.7.2.js"></script>
+	<script>
+		var id_lock=false;
+		var user_lock=false;
+		var $username=$("#username");
+		var $id=$("#id");
+		var $userid_check=$("#userid_check");
+		var $username_check=$("#username_check");
+		var $password=$("#password");
+		var $password_check=$("#password_check");
+		$id.focus(function(){
+			this.value="";
+			$userid_check.html("");
+		});
+		$id.blur(function(){
+			var val=this.value;
+			if(val===""){
+				id_lock=false;
+				return;
+			}
+			$.ajax({
+				type:"post",
+				url:"/check_name",
+				data:{
+					check:"userid",
+					userid:val
+				},
+				dataType:"json",
+				success:function(data){
+					// console.log(1)
+					// console.log(data);
+					if(!data.errno){
+						$userid_check.html("  恭喜你,此编号可用!");
+						$userid_check.css("color","green");
+						$userid_check.css("font-size",15);
+
+						id_lock=true;
+					}else{
+						$userid_check.html("  对不起,此编号已被占用!");
+						$userid_check.css("color","red");
+						$userid_check.css("font-size",15);
+						id_lock=false;
+					}
+				}
+			})
+		});
+
+		$username.focus(function(){
+			this.value="";
+			$username_check.html("");
+		})
+		$username.blur(function(){
+			var val=this.value;
+			if(!val){
+				user_lock=false;
+				return;
+			}
+			//正则判定
+			var reg=/.{2,8}/;
+			if(!reg.test(val)){
+				user_lock=false;
+				$username_check.html("  用户名称长度为2-8位!");
+				$username_check.css("color","red");
+				return;
+			}
+			$.ajax({
+				type:"post",
+				url:"/check_name",
+				data:{
+					check:"username",
+					username:val
+				},
+				dataType:"json",
+				success:function(data){
+					// console.log(data);
+					if(!data.errno){
+						$username_check.html("  恭喜你,此名称可用!");
+						$username_check.css("color","green");
+						$username_check.css("font-size",15);
+						user_lock=true;
+					}else{
+						$username_check.html("  对不起,此名称已被占用!");
+						$username_check.css("color","red");
+						$username_check.css("font-size",15);
+						user_lock=false;
+					}
+				}
+			})
+		})
+		$password.focus(function(){
+			this.value="";
+			$password_check.html("");
+		})
+		$password.blur(function(){
+			var val=this.value;
+			//正则判定
+			var reg=/\w{3,8}/;
+			if(!reg.test(val)){
+				$password_check.html("  请输入3-8位数字、字母、下划线!");
+				$password_check.css("color","red");
+				return;
+			}
+			
+		})
+		$("#submit").click(function(){
+			// console.log(id_lock,user_lock);
+			if(!(id_lock && user_lock)){
+				return false;
+			}
+		})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	</script>
+</body>
+</html>
